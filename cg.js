@@ -1,8 +1,19 @@
 //sets the canvas to alway be the height of the window
 //then it will adjust the width to be the correct ratio
 function resizeCanvas() {
-    canvas.width = window.innerHeight * width/height;
-    canvas.height = window.innerHeight;
+    let newWidth;
+    let newHeight;
+    if(fullscreen){
+        newWidth = window.innerHeight * width/height;
+        newHeight = window.innerHeight;
+    }
+    else {
+        newWidth = canvas.width;
+        newHeight = canvas.height;
+    }
+    
+    canvas.width = newWidth;
+    canvas.height = newHeight;
     console.log("Resized canvas to " + canvas.width + "x" + canvas.height);
 }
 
@@ -17,11 +28,12 @@ let canvas;
 let ctx;
 let drawfunc;
 
-function initCG(html_canvas, drawfunction, w, h) {
+function initCG(html_canvas, drawfunction, w, h, fs = true) {
     drawfunc = drawfunction;
     canvas = html_canvas;
     width = w;
     height = h;
+    fullscreen = fs;
     ctx = canvas.getContext('2d');
     resizeCanvas();
     render(drawfunc);

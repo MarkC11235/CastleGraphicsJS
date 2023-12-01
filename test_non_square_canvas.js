@@ -12,4 +12,4 @@ function draw(){
 }
 
 const c = document.getElementById('canvas');
-initCG(c, draw, 100, 80);
+initCG(c, draw, 100, 80, false);
