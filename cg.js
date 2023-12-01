@@ -1,6 +1,7 @@
-//Just always sets to be a square
+//sets the canvas to alway be the height of the window
+//then it will adjust the width to be the correct ratio
 function resizeCanvas() {
-    canvas.width = window.innerHeight;
+    canvas.width = window.innerHeight * width/height;
     canvas.height = window.innerHeight;
     console.log("Resized canvas to " + canvas.width + "x" + canvas.height);
 }
@@ -56,10 +57,9 @@ function drawBorder(border_width, color) {
     fillRect(width - border_width, 0, border_width, height, color);
     fillRect(0, height - border_width, width, border_width, color);
 }
-function clearRect(x, y, w, h) {
-    [x,y] = standardize(x, y);
-    [w,h] = standardize(w, h);
-    ctx.clearRect(x, y, w, h);
+function clearCanvas() {
+    [w,h] = standardize(width, height);
+    ctx.clearRect(0, 0, w, h);
 }
 //--------------------------------------------------------------------------------
 

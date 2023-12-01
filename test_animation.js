@@ -9,8 +9,10 @@ function sub(a, b) {
 }
 let addorsub = add;
 
+//This is what will be rendered on the canvas every frame
+//This animation is made for a 100x100 canvas
 function draw() {
-    clearRect(0, 0, 100, 100);
+    clearCanvas(0, 0, 100, 100);
     fillRect(i, j, 10, 10, 'red');
     fillRect(i, 90-j, 10, 10, 'blue');
     fillRect(90-i, j, 10, 10, 'green');
