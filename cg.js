@@ -1,5 +1,7 @@
-//sets the canvas to alway be the height of the window
-//then it will adjust the width to be the correct ratio
+//if fullscreen is true, it will set the height to be the full height of the window
+//then it set the width to be the right ratio to the height
+//else it will set the height to be the height of the canvas
+//and the width will be set to the width of the canvas
 function resizeCanvas() {
     let newWidth;
     let newHeight;
@@ -28,6 +30,7 @@ let canvas;
 let ctx;
 let drawfunc;
 
+//this should only be called once
 function initCG(html_canvas, drawfunction, w, h, fs = true) {
     drawfunc = drawfunction;
     canvas = html_canvas;

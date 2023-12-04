@@ -1,6 +1,7 @@
 Castle Graphics 
 
 JavaScript Library for rendering
+This is intended to be used for games, as my plan is to make a game framework that uses this 
 
 To use:
     - First get the html canvas element
