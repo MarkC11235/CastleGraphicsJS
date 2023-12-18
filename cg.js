@@ -53,7 +53,7 @@ async function render(drawfunc) {
 
 //Helper functions --------------------------------------------------------------
 //this function will take in the x and y (either coordinates or width and height) and return the standardized version
-//this way i can use any width and height and it will be scaled to the canvas
+//this way I can use any width and height and it will be scaled to the canvas
 function standardize(x, y) {
     x = (x / width) * canvas.width;
     y = (y / height) * canvas.height;
@@ -73,7 +73,7 @@ function drawBorder(border_width, color) {
     fillRect(0, height - border_width, width, border_width, color);
 }
 function clearCanvas() {
-    [w,h] = standardize(width, height);
+    let [w,h] = standardize(width, height);
     ctx.clearRect(0, 0, w, h);
 }
 //--------------------------------------------------------------------------------
@@ -149,3 +149,55 @@ function drawLine(x1, y1, x2, y2, color) {
 //--------------------------------------------------------------------------------
 
 
+//Sprites -----------------------------------------------------------------------
+//create an animated sprite
+//to use it, create an array of images, then pass it in
+//the speed is how many frames it will wait before changing the image, so a speed of 10 will change the image every 10 frames
+//a higher speed will make it slower
+//the images should all be the same size
+//call the draw() function inside of your draw function
+class AnimatedSprite {
+    constructor(x, y, w, h, images, speed) {
+        this.x = x;
+        this.y = y;
+        this.w = w;
+        this.h = h;
+        this.images = images; 
+        this.speed = speed;
+        this.speed_counter = 0;
+        this.frame = 0;
+    }
+    draw(){
+        if(this.speed_counter == this.speed){
+            this.frame++;
+            this.speed_counter = 0;
+        }
+        if(this.frame == this.images.length){
+            this.frame = 0;
+        }
+
+        drawSprite(this.x, this.y, this.w, this.h, this.images[this.frame]);
+        
+        this.speed_counter++;
+    }
+}
+
+//image is an image object
+function drawSprite(x, y, w, h, image) {
+    [x,y] = standardize(x, y);
+    [w,h] = standardize(w, h);
+    ctx.drawImage(image, x, y, w, h);
+}
+
+//takes in the angle in degrees, then converts it to radians for the ctx.rotate() function
+function drawSpriteRotated(x, y, w, h, image, angle) {
+    [x,y] = standardize(x, y);
+    [w,h] = standardize(w, h);
+    ctx.save();
+    ctx.translate(x + w/2, y + h/2);
+    angle = angle * Math.PI / 180;
+    ctx.rotate(angle);
+    ctx.drawImage(image, -w/2, -h/2, w, h);
+    ctx.restore();
+}
+//--------------------------------------------------------------------------------
