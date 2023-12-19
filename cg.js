@@ -1,3 +1,14 @@
+//these are what the user wants the coordinates to be
+let width;
+let height;
+
+//stores the width and height of the canvas at initialization
+let init_width;
+let init_height;
+
+//store the old margin of the body so it can be reset when fullscreen is toggled off
+let init_margin;
+
 //if fullscreen is true, it will set the height to be the full height of the window
 //then it set the width to be the right ratio to the height
 //else it will set the height to be the height of the canvas
@@ -8,10 +19,14 @@ function resizeCanvas() {
     if(fullscreen){
         newWidth = window.innerHeight * width/height;
         newHeight = window.innerHeight;
+        //set the margin to 0 so the canvas will fill the whole screen
+        document.body.style.margin = 0;
     }
     else {
-        newWidth = canvas.width;
-        newHeight = canvas.height;
+        newWidth = init_width;
+        newHeight = init_height;
+        //reset the margin to the initial margin
+        document.body.style.margin = init_margin;
     }
     
     canvas.width = newWidth;
@@ -19,23 +34,45 @@ function resizeCanvas() {
     console.log("Resized canvas to " + canvas.width + "x" + canvas.height);
 }
 
+let fullscreen = false;
+function toggleFullscreen() {
+    fullscreen = !fullscreen;
+    resizeCanvas();
+}   
+
+//Temporary for testing fullscreen
+let fullscreen_key = 'Escape';
+window.addEventListener('keydown', function(e) {
+    if(e.key == fullscreen_key){
+        toggleFullscreen();
+    }
+});
+
 // Resize the canvas every time the window size changes
 window.addEventListener('resize', resizeCanvas);
-
-//these are what the user wants the coordinates to be
-let width;
-let height;
 
 let canvas;
 let ctx;
 let drawfunc;
 
 //this should only be called once
+//the size of the canvas that you send in should be the size that you want the canvas to be
+//the width and height are the coordinates that you want to use
+//the coordinates should be the same ratio as the canvas
 function initCG(html_canvas, drawfunction, w, h, fs = true) {
     drawfunc = drawfunction;
     canvas = html_canvas;
+    //store the users perference for coordinates to be used in the standardize function
     width = w;
     height = h;
+
+    //store the initial width and height of the canvas
+    init_width = canvas.width;
+    init_height = canvas.height;
+
+    //store the initial margin of the body so it can be reset when fullscreen is toggled off
+    init_margin = document.body.style.margin;
+
     fullscreen = fs;
     ctx = canvas.getContext('2d');
     resizeCanvas();
