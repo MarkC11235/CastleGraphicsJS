@@ -75,6 +75,8 @@ function initCG(html_canvas, drawfunction, w, h, fs = true) {
 
     fullscreen = fs;
     ctx = canvas.getContext('2d');
+    ctx.imageSmoothingEnabled = false;
+
     resizeCanvas();
     render(drawfunc);
 }
@@ -185,6 +187,25 @@ function drawLine(x1, y1, x2, y2, color) {
 }
 //--------------------------------------------------------------------------------
 
+//Text --------------------------------------------------------------------------
+let font = 'Arial';
+let font_size = 12;
+let font_color = '#000000';
+
+function setFont(f, s, c) {
+    font = f;
+    font_size = s;
+    font_color = c;
+}
+
+function drawText(x, y, text, color = font_color) {
+    [x,y] = standardize(x, y);
+    let [dummy, normalized_font_size] = standardize(0, font_size); //this is to make the font size scale with the canvas
+    ctx.font = normalized_font_size + 'px ' + font;
+    ctx.fillStyle = color;
+    ctx.fillText(text, x, y + normalized_font_size); //the y coordinate is the bottom of the text, so I add the font size to it to make it the top
+}
+//--------------------------------------------------------------------------------
 
 //Sprites -----------------------------------------------------------------------
 //create an animated sprite
@@ -219,11 +240,14 @@ class AnimatedSprite {
     }
 }
 
-//image is an image object
+//image is the path to the image
 function drawSprite(x, y, w, h, image) {
     [x,y] = standardize(x, y);
     [w,h] = standardize(w, h);
-    ctx.drawImage(image, x, y, w, h);
+    ctx.imageSmoothingEnabled = false; //this is to scale the image without blurring it
+    let img = new Image();
+    img.src = image;
+    ctx.drawImage(img, x, y, w, h);
 }
 
 //takes in the angle in degrees, then converts it to radians for the ctx.rotate() function
