@@ -9,16 +9,22 @@ let init_height;
 //store the old margin of the body so it can be reset when fullscreen is toggled off
 let init_margin;
 
-//if fullscreen is true, it will set the height to be the full height of the window
-//then it set the width to be the right ratio to the height
-//else it will set the height to be the height of the canvas
-//and the width will be set to the width of the canvas
+//if fullscreen is true, it will choose the largest size that will fit on the screen
+//that is the same ratio as the width and height
 function resizeCanvas() {
     let newWidth;
     let newHeight;
     if(fullscreen){
         newWidth = window.innerHeight * width/height;
-        newHeight = window.innerHeight;
+        //if there is not enough room to fit the canvas, then set the width to be the width of the window
+        //and set the height to be the right ratio to the width
+        if(newWidth > window.innerWidth){
+            newWidth = window.innerWidth;
+            newHeight = window.innerWidth * height/width;
+        }
+        else{//else set the height to be the height of the window
+            newHeight = window.innerHeight;
+        }
         //set the margin to 0 so the canvas will fill the whole screen
         document.body.style.margin = 0;
     }
@@ -31,7 +37,7 @@ function resizeCanvas() {
     
     canvas.width = newWidth;
     canvas.height = newHeight;
-    console.log("Resized canvas to " + canvas.width + "x" + canvas.height);
+    //console.log("Resized canvas to " + canvas.width + "x" + canvas.height);
 }
 
 let fullscreen = false;
@@ -59,7 +65,7 @@ let drawfunc;
 //the size of the canvas that you send in should be the size that you want the canvas to be
 //the width and height are the coordinates that you want to use
 //the coordinates should be the same ratio as the canvas
-function initCG(html_canvas, drawfunction, w, h, fs = true) {
+function initCG(html_canvas, drawfunction, w, h, fs = false) {
     drawfunc = drawfunction;
     canvas = html_canvas;
     //store the users perference for coordinates to be used in the standardize function
@@ -75,18 +81,24 @@ function initCG(html_canvas, drawfunction, w, h, fs = true) {
 
     fullscreen = fs;
     ctx = canvas.getContext('2d');
-    ctx.imageSmoothingEnabled = false;
 
     resizeCanvas();
-    render(drawfunc);
+    //render();
 }
 
 //Render functions --------------------------------------------------------------
 //takes in a function that will draw the canvas
-async function render(drawfunc) {
+//calling this function will cause the canvas to start being redrawn every frame
+async function render() {
     drawfunc();
     await sleep(1000/60);
-    render(drawfunc);
+    render();
+}
+
+//this function will draw the canvas once
+//this is useful for when you want to draw the canvas only when something changes
+function CGDraw() {
+    drawfunc();
 }
 //--------------------------------------------------------------------------------
 
@@ -96,6 +108,14 @@ async function render(drawfunc) {
 function standardize(x, y) {
     x = (x / width) * canvas.width;
     y = (y / height) * canvas.height;
+    return [x, y];
+}
+
+//this returns the x and y that the user wants to use
+//this is useful for when you want to get the mouse position
+function reverseStandardize(x, y) {
+    x = (x / canvas.width) * width;
+    y = (y / canvas.height) * height;
     return [x, y];
 }
 
@@ -198,10 +218,10 @@ function setFont(f, s, c) {
     font_color = c;
 }
 
-function drawText(x, y, text, color = font_color) {
+function drawText(x, y, text, color = font_color, s = font_size, f = font) {
     [x,y] = standardize(x, y);
-    let [dummy, normalized_font_size] = standardize(0, font_size); //this is to make the font size scale with the canvas
-    ctx.font = normalized_font_size + 'px ' + font;
+    let [dummy, normalized_font_size] = standardize(0, s); //this is to make the font size scale with the canvas
+    ctx.font = normalized_font_size + 'px ' + f;
     ctx.fillStyle = color;
     ctx.fillText(text, x, y + normalized_font_size); //the y coordinate is the bottom of the text, so I add the font size to it to make it the top
 }
@@ -240,14 +260,11 @@ class AnimatedSprite {
     }
 }
 
-//image is the path to the image
 function drawSprite(x, y, w, h, image) {
     [x,y] = standardize(x, y);
     [w,h] = standardize(w, h);
     ctx.imageSmoothingEnabled = false; //this is to scale the image without blurring it
-    let img = new Image();
-    img.src = image;
-    ctx.drawImage(img, x, y, w, h);
+    ctx.drawImage(image, x, y, w, h);
 }
 
 //takes in the angle in degrees, then converts it to radians for the ctx.rotate() function
@@ -258,6 +275,16 @@ function drawSpriteRotated(x, y, w, h, image, angle) {
     ctx.translate(x + w/2, y + h/2);
     angle = angle * Math.PI / 180;
     ctx.rotate(angle);
+    ctx.drawImage(image, -w/2, -h/2, w, h);
+    ctx.restore();
+}
+
+function drawSpriteFlipX(x, y, w, h, image) {
+    [x,y] = standardize(x, y);
+    [w,h] = standardize(w, h);
+    ctx.save();
+    ctx.translate(x + w/2, y + h/2);
+    ctx.scale(-1, 1);
     ctx.drawImage(image, -w/2, -h/2, w, h);
     ctx.restore();
 }
