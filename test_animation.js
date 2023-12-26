@@ -33,3 +33,5 @@ function draw() {
 
 const c = document.getElementById('canvas');
 initCG(c, draw, 100, 100);
+
+render();
