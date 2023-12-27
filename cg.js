@@ -347,11 +347,54 @@ function rotateAroundAPointX(point, center, angle) {
                           
     return [rx + cx, ry + cy, rz + cz];
 }
+
+function getNormal(p1, p2, p3) {
+    let [x1, y1, z1] = p1;
+    let [x2, y2, z2] = p2;
+    let [x3, y3, z3] = p3;
+
+    let [ux, uy, uz] = [x2 - x1, y2 - y1, z2 - z1];
+    let [vx, vy, vz] = [x3 - x1, y3 - y1, z3 - z1];
+
+    let [nx, ny, nz] = [uy * vz - uz * vy, uz * vx - ux * vz, ux * vy - uy * vx];
+
+    let length = Math.sqrt(nx * nx + ny * ny + nz * nz);
+    nx /= length;
+    ny /= length;
+    nz /= length;
+
+    return [nx, ny, nz];
+}
+
+function getShading(normal) {
+    let [nx, ny, nz] = normal;
+    let [lx, ly, lz] = LIGHT_SOURCE;
+
+    let dot = nx * lx + ny * ly + nz * lz;
+    dot = Math.abs(dot);
+    dot = Math.min(dot, 1);
+    return dot;
+}
+
+function dotProduct(v1, v2) {
+    let [x1, y1, z1] = v1;
+    let [x2, y2, z2] = v2;
+    return x1 * x2 + y1 * y2 + z1 * z2;
+}
+    
+function averageZ(face, points) {
+    let sum = 0;
+    for(let i = 0; i < face.length; i++){
+        sum += points[face[i]][2];
+    }
+    return sum / face.length;
+}
 //--------------------------------------------------------------------------------
 //if the cube is paritially/fully behind the screenZ, then it won't be rendered correctly
 //the EDGES and FACES get out of order because of the negative Z values
 const EDGES = [[0, 1], [1, 2], [2, 3], [3, 0], [4,5], [5,6], [6,7], [7,4], [0,4], [1,5], [2,6], [3,7]];
 const FACES = [[0,1,2,3], [4,5,6,7], [0,4,5,1], [2,3,7,6], [1,2,6,5], [0,3,7,4]];
+const LIGHT_SOURCE = [0, 0, 1];
 const TEST_MODE = false;
 class Cube{
     constructor(x, y, z, s, color = 'red', rotX = 0, rotY = 0, rotZ = 0){//x, y, z is the center of the cube
@@ -392,16 +435,74 @@ function drawEdges(projected){
     }
 }
 
-function drawFaces(projected, color = 'red'){
+function drawFaces(points, projected, color = '#FF0000'){
+    let center = [
+        (points[0][0] + points[6][0]) / 2,
+        (points[0][1] + points[6][1]) / 2,
+        (points[0][2] + points[6][2]) / 2
+    ];
+
+    //sort the faces by average z value
+    //this is so that the faces that are closer to the camera will be drawn on top of the faces that are farther away
+    //just in case the face is technically facing you but is behind another face
+    let faces = FACES.map(face => ({face, avgZ: averageZ(face, points)}));
+
+    faces.sort((a, b) => b.avgZ - a.avgZ);
+    //console.log(faces);
+
     //Draw faces
-    for(let i = 0; i < FACES.length; i++){
-        const f = FACES[i];
+    for(let i = 0; i < faces.length; i++){
+        //console.log("Drawing face " + i);
+        //console.log(FACES[i]);
+        const f = faces[i].face;
         const p1 = projected[f[0]];
         const p2 = projected[f[1]];
         const p3 = projected[f[2]];
         const p4 = projected[f[3]];
-        fillTriangle(p1[0], p1[1], p2[0], p2[1], p3[0], p3[1], color);
-        fillTriangle(p1[0], p1[1], p3[0], p3[1], p4[0], p4[1], color);
+
+
+        //console.log(color);
+        let normal = getNormal(points[f[0]], points[f[1]], points[f[2]]);
+        //console.log(normal);
+
+        let faceToCenter = [center[0] - points[f[0]][0], center[1] - points[f[0]][1], center[2] - points[f[0]][2]];
+        //console.log(faceToCenter);
+        //console.log(dotProduct(normal, faceToCenter));
+        if(dotProduct(normal, faceToCenter) > 0) //if the normal is pointing towards from the center, then flip it
+            normal = [-normal[0], -normal[1], -normal[2]];
+
+        //console.log(normal);
+
+        //backface culling
+        let camToFace = [points[f[0]][0] - eye[0], points[f[0]][1] - eye[1], points[f[0]][2] - eye[2]];
+        if(dotProduct(normal, camToFace) > 0){
+            //console.log("Backface culling: " + i);
+            continue;
+        }
+
+        let shading = getShading(normal);
+        //console.log(normal, shading);
+        let r = parseInt(color.substring(1, 3), 16);
+        let g = parseInt(color.substring(3, 5), 16);
+        let b = parseInt(color.substring(5, 7), 16);
+      
+        r = Math.round(r * shading);
+        r = r.toString(16);
+        r = r.padStart(2, '0');
+
+        g = Math.round(g * shading);
+        g = g.toString(16);
+        g = g.padStart(2, '0');
+
+        b = Math.round(b * shading);
+        b = b.toString(16);
+        b = b.padStart(2, '0');
+        
+        let newColor = '#' + r + g + b;
+        //console.log(newColor);
+        
+        fillTriangle(p1[0], p1[1], p2[0], p2[1], p3[0], p3[1], newColor);
+        fillTriangle(p1[0], p1[1], p3[0], p3[1], p4[0], p4[1], newColor);
     }
 }
 
@@ -433,7 +534,7 @@ function drawCube(points, color = 'red'){
     if(TEST_MODE)
         drawEdges(projected);
     else
-        drawFaces(projected, color);
+        drawFaces(points, projected, color);
 }
 
 function drawCubeRotated(points, rotX, rotY, rotZ, color = 'red'){
@@ -461,4 +562,3 @@ function drawCubeRotated(points, rotX, rotY, rotZ, color = 'red'){
     drawCube(rotatedPoints, color);
 }
 //--------------------------------------------------------------------------------
-
