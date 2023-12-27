@@ -1,0 +1,41 @@
+let floor = new Block(50, 100, 60, 100, 10, 100, CG_DARK_GREEN); 
+
+let trunk = new Block(50, 90, 80, 10, 50, 10, CG_BROWN);
+
+let x = 50;
+let y = 55;
+let z = 80;
+let w = 40;
+let h = 40;
+let d = 40;
+let main_leaves = new Block(x, y, z, w, h, d, CG_GREEN);
+let above = new Block(x, y - h/2, z, 20, 10, 20, CG_GREEN); //top
+
+changeLightSource(0, 1, 1);
+
+let rot = 60;
+rot = rot * Math.PI / 180;
+rot = rot % (2 * Math.PI);
+function draw(){
+    fillCanvas(CG_LIGHT_BLUE);
+
+    // rot += 0.01;
+    // if(rot > 2 * Math.PI)
+    //     rot = 0;
+
+    floor.draw();
+
+    trunk.rotX = rot;
+    trunk.draw();
+
+    above.rotX = rot;
+    above.draw();
+
+    main_leaves.rotX = rot;
+    main_leaves.draw();
+}
+
+const c  = document.getElementById('canvas');
+initCG(c, draw, 100, 100);
+render();
+//CGDraw();

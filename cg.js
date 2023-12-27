@@ -1,3 +1,20 @@
+//Predefined colors--------------------------------------------------------------
+const CG_RED = '#FF0000';
+const CG_GREEN = '#00FF00';
+const CG_DARK_GREEN = '#005000';
+const CG_BLUE = '#0000FF';
+const CG_LIGHT_BLUE = '#00AAFF';
+const CG_YELLOW = '#FFFF00';
+const CG_CYAN = '#00FFFF';
+const CG_MAGENTA = '#FF00FF';
+const CG_WHITE = '#FFFFFF';
+const CG_BLACK = '#000000';
+const CG_GRAY = '#AAAAAA';
+const CG_DARK_GRAY = '#555555';
+const CG_LIGHT_GRAY = '#CCCCCC';
+const CG_BROWN = '#802000';
+//--------------------------------------------------------------------------------
+
 //these are what the user wants the coordinates to be
 let width;
 let height;
@@ -139,6 +156,10 @@ function drawBorder(border_width, color) {
 function clearCanvas() {
     let [w,h] = standardize(width, height);
     ctx.clearRect(0, 0, w, h);
+}
+function fillCanvas(color) {
+    let [w,h] = standardize(width, height);
+    fillRect(0, 0, w, h, color);
 }
 //--------------------------------------------------------------------------------
 
@@ -306,9 +327,9 @@ function project(x, y, z) {
     if(z === screenZ)
         return [x, y];
     
-    let sx = (y - eye[1]) * (screenZ - z) / (z - eye[2]) + y;
-    let sy = (x - eye[0]) * (screenZ - z) / (z - eye[2]) + x;
-    
+    let sx = (x - eye[0]) * (screenZ - z) / (z - eye[2]) + x;
+    let sy = (y - eye[1]) * (screenZ - z) / (z - eye[2]) + y;
+
     return [sx, sy];
 }
 
@@ -389,12 +410,18 @@ function averageZ(face, points) {
     }
     return sum / face.length;
 }
+
+function changeLightSource(x, y, z) {
+    LIGHT_SOURCE[0] = x;
+    LIGHT_SOURCE[1] = y;
+    LIGHT_SOURCE[2] = z;
+}
 //--------------------------------------------------------------------------------
 //if the cube is paritially/fully behind the screenZ, then it won't be rendered correctly
 //the EDGES and FACES get out of order because of the negative Z values
 const EDGES = [[0, 1], [1, 2], [2, 3], [3, 0], [4,5], [5,6], [6,7], [7,4], [0,4], [1,5], [2,6], [3,7]];
 const FACES = [[0,1,2,3], [4,5,6,7], [0,4,5,1], [2,3,7,6], [1,2,6,5], [0,3,7,4]];
-const LIGHT_SOURCE = [0, 0, 1];
+const LIGHT_SOURCE = [0, 0, 1];//default to light coming from the screen
 const TEST_MODE = false;
 class Cube{
     constructor(x, y, z, s, color = 'red', rotX = 0, rotY = 0, rotZ = 0){//x, y, z is the center of the cube
@@ -416,6 +443,37 @@ class Cube{
             [this.x + this.s/2, this.y - this.s/2, this.z + this.s/2],
             [this.x + this.s/2, this.y + this.s/2, this.z + this.s/2],
             [this.x - this.s/2, this.y + this.s/2, this.z + this.s/2]
+        ]
+    }
+
+    draw(){
+        drawCubeRotated(this.points, this.rotX, this.rotY, this.rotZ, this.color);
+        //drawCube(this.points, this.color);
+    }
+}
+
+class Block{
+    constructor(x, y, z, w, h, d, color = 'red', rotX = 0, rotY = 0, rotZ = 0){//x, y, z is the center of the block
+        this.x = x;
+        this.y = y;
+        this.z = z;
+        this.w = w;
+        this.h = h;
+        this.d = d;
+        this.color = color;
+        this.rotX = rotX;
+        this.rotY = rotY;
+        this.rotZ = rotZ;
+
+        this.points = [
+            [this.x - this.w/2, this.y - this.h/2, this.z - this.d/2],
+            [this.x + this.w/2, this.y - this.h/2, this.z - this.d/2],
+            [this.x + this.w/2, this.y + this.h/2, this.z - this.d/2],
+            [this.x - this.w/2, this.y + this.h/2, this.z - this.d/2],
+            [this.x - this.w/2, this.y - this.h/2, this.z + this.d/2],
+            [this.x + this.w/2, this.y - this.h/2, this.z + this.d/2],
+            [this.x + this.w/2, this.y + this.h/2, this.z + this.d/2],
+            [this.x - this.w/2, this.y + this.h/2, this.z + this.d/2]
         ]
     }
 
@@ -503,6 +561,8 @@ function drawFaces(points, projected, color = '#FF0000'){
         
         fillTriangle(p1[0], p1[1], p2[0], p2[1], p3[0], p3[1], newColor);
         fillTriangle(p1[0], p1[1], p3[0], p3[1], p4[0], p4[1], newColor);
+        drawLine(p1[0], p1[1], p3[0], p3[1], newColor); //this to fix the lines between the faces
+                                                        //Only kind of works(would need a thicker line to work well)
     }
 }
 
@@ -530,6 +590,8 @@ function drawCube(points, color = 'red'){
             drawText(projected[i][0], projected[i][1], i, 'black', 2.5);
         }
     }
+
+    console.log(projected); 
 
     if(TEST_MODE)
         drawEdges(projected);
