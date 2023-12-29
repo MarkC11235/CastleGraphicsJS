@@ -322,10 +322,15 @@ function drawSpriteFlipX(x, y, w, h, image) {
 //the position of the eye(eye[0] and eye[1] get set to half the width and height of the canvas in initCG())
 //eye[2] is the z coordinate of the eye, and gets set to -width/2 in initCG()
 const eye = [50, 50, -50]; 
+function changeEye(x, y, z) {
+    eye[0] = x;
+    eye[1] = y;
+    eye[2] = z;
+}
 const screenZ = 0;
 function project(x, y, z) {
-    if(z === screenZ)
-        return [x, y];
+    // if(z === screenZ)
+    //     return [x, y];
     
     let sx = (x - eye[0]) * (screenZ - z) / (z - eye[2]) + x;
     let sy = (y - eye[1]) * (screenZ - z) / (z - eye[2]) + y;
@@ -575,10 +580,10 @@ function drawCube(points, color = 'red'){
         const y = p[1];
         const z = p[2];
 
-        if(z < screenZ){
-            console.log("Point is behind screenZ");
-            return;
-        }
+        // if(z < screenZ){
+        //     console.log("Point is behind screenZ");
+        //     return;
+        // }
 
         [sx, sy] = project(x, y, z);
         projected.push([sx, sy]);
@@ -591,7 +596,7 @@ function drawCube(points, color = 'red'){
         }
     }
 
-    console.log(projected); 
+    //console.log(projected); 
 
     if(TEST_MODE)
         drawEdges(projected);

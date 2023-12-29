@@ -11,18 +11,21 @@ let d = 40;
 let main_leaves = new Block(x, y, z, w, h, d, CG_GREEN);
 let above = new Block(x, y - h/2, z, 20, 10, 20, CG_GREEN); //top
 
-changeLightSource(0, 1, 1);
+changeLightSource(0, 1, .6);
 
 let rot = 60;
 rot = rot * Math.PI / 180;
 rot = rot % (2 * Math.PI);
+
+let zEye = -50;
 function draw(){
     fillCanvas(CG_LIGHT_BLUE);
 
-    // rot += 0.01;
-    // if(rot > 2 * Math.PI)
-    //     rot = 0;
+    rot += 0.01;
+    if(rot > 2 * Math.PI)
+        rot = 0;
 
+    floor.rotX = rot;
     floor.draw();
 
     trunk.rotX = rot;
@@ -33,6 +36,10 @@ function draw(){
 
     main_leaves.rotX = rot;
     main_leaves.draw();
+
+    //zEye += 0.1;
+    //console.log(zEye);
+    //changeEye(50, 50, zEye);
 }
 
 const c  = document.getElementById('canvas');
