@@ -181,16 +181,18 @@ function toHex2(num) {
     return str;
 }
 
-//r, g, b are numbers from 0 to 255, will be set to 255 if they are greater than 255
-//returns a string of the form '#RRGGBB'
-function toColor(r, g, b) {
+//r, g, b, a are numbers from 0 to 255, will be set to 255 if they are greater than 255
+//returns a string of the form '#RRGGBBAA'
+function toColor(r, g, b, a = 255) {
     if(r > 255)
         r = 255;
     if(g > 255)
         g = 255;
     if(b > 255)
         b = 255;
-    return '#' + toHex2(r) + toHex2(g) + toHex2(b);
+    if(a > 255)
+        a = 255;
+    return '#' + toHex2(r) + toHex2(g) + toHex2(b) + toHex2(a);
 }
 //--------------------------------------------------------------------------------
 
