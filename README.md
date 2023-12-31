@@ -1,28 +1,34 @@
-Castle Graphics \n
+Castle Graphics 
 
-JavaScript Library for rendering \n
-This is intended to be used for games, as my plan is to make a game framework that uses this \n
+JavaScript Library for rendering 
 
-To use: \n
-    - Get the canvas(es) that you want to use\n
-    - then call addCGCanvas for each canvas, pass in the canvas, the draw function, and the width and height\n
-    - Then call render which creates a render loop with those draw functions at 60 fps\n\n
+This is intended to be used for games, as my plan is to make a game framework that uses this 
 
-Features: \n
-    - Handles resizing the canvas whenever the screen is adjusted \n
-    - Will adjust to any screen size \n
-    - Can use your own coordinates (width and height passed into addCGCanvas)\n
-    - Only renders if the canvas is at least in part on the screen\n
+To use: 
+    - Get the canvas(es) that you want to use
+    
+    - then call addCGCanvas for each canvas, pass in the canvas, the draw function, and the width and height
 
-    2D: \n
-        - Draw/Fill: Rectangle, Circle, Triangle \n
-        - Draw Lines\n
-        - Clear/Fill canvas\n
-        - Draw border of various width \n
-        - Draw Text\n
-        - Can draw sprites and animated sprites\n
+    - Then call render which creates a render loop with those draw functions at 60 fps
 
-    3D: \n
-        - Projects 3D points onto the 2D screen\n
-        - Can draw cubes and rectangular prisms\n 
-        - Has a light source to do shading with\n
+Features: 
+    - Handles resizing the canvas whenever the screen is adjusted 
+
+    - Will adjust to any screen size 
+    
+    - Can use your own coordinates (width and height passed into addCGCanvas)
+    
+    - Only renders if the canvas is at least in part on the screen
+
+    2D: 
+        - Draw/Fill: Rectangle, Circle, Triangle 
+        - Draw Lines
+        - Clear/Fill canvas
+        - Draw border of various width 
+        - Draw Text
+        - Can draw sprites and animated sprites
+
+    3D: 
+        - Projects 3D points onto the 2D screen
+        - Can draw cubes and rectangular prisms 
+        - Has a light source to do shading with
