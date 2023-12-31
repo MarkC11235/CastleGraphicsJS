@@ -554,7 +554,7 @@ function drawEdges(projected){
     }
 }
 
-function drawFaces(points, projected, color = '#FF0000'){
+function drawFaces(points, projected, color = '#FF0000FF'){
     let center = [
         (points[0][0] + points[6][0]) / 2,
         (points[0][1] + points[6][1]) / 2,
@@ -619,7 +619,9 @@ function drawFaces(points, projected, color = '#FF0000'){
         
         let newColor = '#' + r + g + b;
 
-        if(color.length == 9){
+        //console.log(color, color.length, color.substring(7, 9));
+        if(color.length == 9 && color.substring(7, 9) != 'ff' && color.substring(7, 9) != 'FF'){
+            //console.log("Color has alpha", color);
             let a = parseInt(color.substring(7, 9), 16);
             a = Math.round(a * shading);
             a = a.toString(16);
@@ -634,11 +636,16 @@ function drawFaces(points, projected, color = '#FF0000'){
         //this to fix the lines between the faces
         //Only kind of works(would need a thicker line to work well)
         //drawLine(p1[0], p1[1], p3[0], p3[1], newColor); 
+        //Right now only draw if the cube is opaque
+        if(color.length == 9 && color.substring(7, 9) == 'ff'){
+            //console.log("Drawing diagonal line");
+            drawLine(p1[0], p1[1], p3[0], p3[1], newColor);
+        }
     }
 }
 
 //if edges is null, then it will just draw the points
-function drawCube(points, color = '#FF0000'){
+function drawCube(points, color = '#FF0000FF'){
     let projected = [];
     for(let i = 0; i < points.length; i++){
         const p = points[i];
@@ -670,7 +677,7 @@ function drawCube(points, color = '#FF0000'){
         drawFaces(points, projected, color);
 }
 
-function drawCubeRotated(points, rotX, rotY, rotZ, color = '#FF0000'){
+function drawCubeRotated(points, rotX, rotY, rotZ, color = '#FF0000FF'){
     let rotatedPoints = [];
 
     let center = [

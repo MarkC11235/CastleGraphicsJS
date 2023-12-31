@@ -1,4 +1,4 @@
-let cube = new Cube(50, 50, 60, 60, '#FF0000');
+let cube = new Cube(50, 50, 60, 60, '#FF0000AA');
 
 let rot = 0;
 rot = rot * Math.PI / 180;
@@ -12,7 +12,7 @@ let bRate = 5;
 
 let colorRot = 0;
 function draw() {
-    fillRect(0, 0, width, height, '#AAAAAA');
+    fillCanvas('#AAAAAA');
     
     rot += 0.01;
     if(rot > 2 * Math.PI)
@@ -40,6 +40,6 @@ function draw() {
 }
 
 const c = document.getElementById('canvas');
-cg_c = addCGCanvas(c, draw, width, height);
+cg_c = addCGCanvas(c, draw, 100, 100);
 
 render(); //Have to add this now if you want the render loop to start
