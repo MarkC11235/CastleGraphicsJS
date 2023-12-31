@@ -1,10 +1,12 @@
 function draw(){
-    clearCanvas(0, 0, 100, 80);
-    fillRect(0, 0, 75, 50, 'grey');
+    clearCanvas(0, 0, 750, 500);
+    fillRect(0, 0, 750, 500, 'grey');
 
 
-    drawBorder(1, 'black');
+    drawBorder(10, 'black');
 }
 
-const c = document.getElementById('canvas');
-initCG(c, draw, 75, 50, false);
+const c = document.getElementById('canvas_750x500');
+const cg_c = addCGCanvas(c, draw, 750, 500);
+
+render(); //Have to add this now if you want the render loop to start

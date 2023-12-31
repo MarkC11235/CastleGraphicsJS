@@ -6,7 +6,7 @@ let rot = 0;
 rot = rot * Math.PI / 180;
 rot = rot % (2 * Math.PI);
 function draw() {
-    fillRect(0, 0, width, height, '#AAAAAA');
+    fillCanvas('#AAAAAA');
     
     rot += 0.01;
     if(rot > 2 * Math.PI)
@@ -29,8 +29,6 @@ function draw() {
 }
 
 const c = document.getElementById('canvas');
-initCG(c, draw, 100, 100);
-
-//CGDraw();
+const cg_c = addCGCanvas(c, draw, 100, 100);
 
 render(); //Have to add this now if you want the render loop to start

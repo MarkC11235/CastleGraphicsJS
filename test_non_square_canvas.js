@@ -11,5 +11,7 @@ function draw(){
     drawBorder(1, 'black');
 }
 
-const c = document.getElementById('canvas');
-initCG(c, draw, 100, 80, false);
+const c = document.getElementById('canvas_non_square');
+const cg_c = addCGCanvas(c, draw, 100, 80);
+
+render(); //Have to add this now if you want the render loop to start

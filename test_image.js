@@ -32,6 +32,6 @@ function draw() {
 }
 
 const c = document.getElementById('canvas');
-initCG(c, draw, 100, 100);
+const cg_c = addCGCanvas(c, draw, 100, 100);
 
-
+render(); //Have to add this now if you want the render loop to start
