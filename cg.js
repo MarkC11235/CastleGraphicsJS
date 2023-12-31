@@ -103,10 +103,27 @@ function addCGCanvas(canvas, drawfunction, w, h, fs = false) {
 //--------------------------------------------------------------------------------
 
 //Render functions --------------------------------------------------------------
+//this function will check if any part of the canvas is in the viewport
+function isElementInViewport(el) {
+    let rect = el.getBoundingClientRect();
+    return (
+        rect.top < (window.innerHeight || document.documentElement.clientHeight) &&
+        rect.left < (window.innerWidth || document.documentElement.clientWidth) &&
+        rect.bottom > 0 &&
+        rect.right > 0
+    );
+}
+
 //calling this function will cause the canvases to start being redrawn every frame
 // ONLY CALL THIS ONCE
 async function render() {
     for(let i = 0; i < CG_CANVAS_LIST.length; i++){
+        //if the canvas is not in the viewport, then don't draw it
+        if(!isElementInViewport(CG_CANVAS_LIST[i].canvas))
+            continue;
+
+        //console.log("Drawing canvas " + i);
+
         currentCTX = CG_CANVAS_LIST[i].ctx;
         currentCanvas = CG_CANVAS_LIST[i].canvas;
         currentWidth = CG_CANVAS_LIST[i].width;
@@ -121,6 +138,10 @@ async function render() {
 
 //this function will draw the given canvas once
 function CGDraw(cg_canvas) {
+    //if the canvas is not in the viewport, then don't draw it
+    if(!isElementInViewport(cg_canvas.canvas))
+        return;
+
     currentCTX = cg_canvas.ctx;
     currentCanvas = cg_canvas.canvas;
     currentWidth = cg_canvas.width;
