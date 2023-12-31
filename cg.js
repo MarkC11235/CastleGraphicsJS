@@ -456,7 +456,7 @@ const FACES = [[0,1,2,3], [4,5,6,7], [0,4,5,1], [2,3,7,6], [1,2,6,5], [0,3,7,4]]
 const LIGHT_SOURCE = [0, 0, 1];//default to light coming from the screen
 const TEST_MODE = false;
 class Cube{
-    constructor(x, y, z, s, color = 'red', rotX = 0, rotY = 0, rotZ = 0){//x, y, z is the center of the cube
+    constructor(x, y, z, s, color = '#FF0000', rotX = 0, rotY = 0, rotZ = 0){//x, y, z is the center of the cube
         this.x = x;
         this.y = y;
         this.z = z;
@@ -491,7 +491,7 @@ class Cube{
 }
 
 class Block{
-    constructor(x, y, z, w, h, d, color = 'red', rotX = 0, rotY = 0, rotZ = 0){//x, y, z is the center of the block
+    constructor(x, y, z, w, h, d, color = '#FF0000', rotX = 0, rotY = 0, rotZ = 0){//x, y, z is the center of the block
         this.x = x;
         this.y = y;
         this.z = z;
@@ -595,17 +595,27 @@ function drawFaces(points, projected, color = '#FF0000'){
         b = b.padStart(2, '0');
         
         let newColor = '#' + r + g + b;
+
+        if(color.length == 9){
+            let a = parseInt(color.substring(7, 9), 16);
+            a = Math.round(a * shading);
+            a = a.toString(16);
+            a = a.padStart(2, '0');
+            newColor += a;
+        }
+
         //console.log(newColor);
         
         fillTriangle(p1[0], p1[1], p2[0], p2[1], p3[0], p3[1], newColor);
         fillTriangle(p1[0], p1[1], p3[0], p3[1], p4[0], p4[1], newColor);
-        drawLine(p1[0], p1[1], p3[0], p3[1], newColor); //this to fix the lines between the faces
-                                                        //Only kind of works(would need a thicker line to work well)
+        //this to fix the lines between the faces
+        //Only kind of works(would need a thicker line to work well)
+        //drawLine(p1[0], p1[1], p3[0], p3[1], newColor); 
     }
 }
 
 //if edges is null, then it will just draw the points
-function drawCube(points, color = 'red'){
+function drawCube(points, color = '#FF0000'){
     let projected = [];
     for(let i = 0; i < points.length; i++){
         const p = points[i];
@@ -637,7 +647,7 @@ function drawCube(points, color = 'red'){
         drawFaces(points, projected, color);
 }
 
-function drawCubeRotated(points, rotX, rotY, rotZ, color = 'red'){
+function drawCubeRotated(points, rotX, rotY, rotZ, color = '#FF0000'){
     let rotatedPoints = [];
 
     let center = [
