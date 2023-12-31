@@ -1,20 +1,51 @@
 <html>
 <head>
     <title>CGJS</title>
-</head>
-<body style="margin: 0%;">
-    <center><canvas id="canvas" width="800" height="800"></canvas></center>
-    <center><canvas id="canvas2" width="800" height="800"></canvas></center>
+    <style>
+        body {
+            background-color: bisque;
+            font-size: x-large;
+        }
+        h1 {
+            color: black;
+        }
+        h2 {
+            color: black;
+        }
+        p {
+            color: black;
+            font-size: 15px;
+        }
+    </style>
     <script src="cg.js"></script>
-    <!-- <script src="tests/test_many_canvas.js"></script> -->
-    <!-- <script src="tests/test_gradient_3D_cube.js"></script> -->
-    <script src="tests/test_many_3D_cubes.js"></script>
-    <!-- <script src="tests/test_3D_scene.js"></script> -->
-    <!-- <script src="tests/test_3D.js"></script> -->
-    <!-- <script src="tests/test_sprites.js"></script> -->
-    <!-- <script src="tests/test_750x500canvas.js"></script> -->
-    <!-- <script src="tests/test_non_square_canvas.js"></script> -->
-    <!-- <script src="tests/test_animation.js"></script> -->
-    <!-- <script src="tests/test_image.js"></script> -->
+</head>
+<body>
+    <center><h1>Castle Graphics JS</h1></center>
+    <center>
+        <p>
+            Castle Graphics JS is a JavaScript library for drawing 2D and 3D graphics. <br>
+            These are some examples of what it can do.
+        </p>
+        <a href = 'https://github.com/MarkC11235/CastleGraphicsJS/' target="_blank">Source</a>
+    </center>
+
+    <center><h2>Cube Made with Spinning Cubes</h2></center>
+    <center><a href = 'https://github.com/MarkC11235/CastleGraphicsJS/tree/main/display/many_3D_cubes.js' target="_blank">Source</a></center>
+    <center><canvas id="canvas_many_3D_cubes" width="800" height="800"></canvas></center>
+    <script src="display/many_3D_cubes.js"></script>
+
+    <center><h2>Transparent Cubes</h2></center>
+    <center><a href = 'https://github.com/MarkC11235/CastleGraphicsJS/tree/main/display/tranparent_cubes.js' target="_blank">Source</a></center>
+    <center><canvas id="canvas_transparent_cubes" width="800" height="800"></canvas></center>
+    <script src="display/transparent_cubes.js"></script>
+
+    <center><h2>3D Scene</h2></center>
+    <center><a href = 'https://github.com/MarkC11235/CastleGraphicsJS/tree/main/display/3D_scene.js' target="_blank">Source</a></center>
+    <center><canvas id="canvas_3D_scene" width="800" height="800"></canvas></center>
+    <script src="display/3D_scene.js"></script>
+
+    <script>
+        render();
+    </script>
 </body>
 </html>
