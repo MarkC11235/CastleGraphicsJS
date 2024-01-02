@@ -19,6 +19,8 @@ const cube = new Cube(50, 50, 50, 50, '#FF0000FF');
 
 const rp = new RectPrism(50, 50, 50, 80, 50, 50, '#FF0000FF');
 
+const pyrimid = new Pyrimid(50, 75, 50, 50, 50, '#FF0000FF');
+
 function draw(){
     fillCanvas("#808080");
     // shape.rotate(.01, .01, .01);
@@ -26,8 +28,10 @@ function draw(){
     //shape.draw();
     // cube.rotate(.01, .01, .01);
     // cube.draw();
-    rp.rotate(.01, .01, .01);
-    rp.draw();
+    // rp.rotate(.01, .01, .01);
+    // rp.draw();
+    pyrimid.rotate(.01, 0, 0);
+    pyrimid.draw();
 }
 
 const c = document.getElementById("canvas");

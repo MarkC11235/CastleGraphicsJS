@@ -459,6 +459,8 @@ function getNormal(p1, p2, p3) {
     return [nx, ny, nz];
 }
 
+//Don't have to worry about if the normal is facing into the shape or not
+//This is because I take the absolute value of the dot product
 function getShading(normal) {
     let [nx, ny, nz] = normal;
     let [lx, ly, lz] = LIGHT_SOURCE;
@@ -529,8 +531,7 @@ function avZ(face) {
 }
 //takes in an array of three points
 //draws a triangle with the given color
-//the center is the center of the whole shape
-function fillFace(points, center, color = '#FF0000FF'){
+function fillFace(points, color = '#FF0000FF'){
     //getting the 2D representation of the points
     let projected = [];
     for(let i = 0; i < points.length; i++){
@@ -544,14 +545,17 @@ function fillFace(points, center, color = '#FF0000FF'){
     }
 
     let newColor = faceShading(points, color);
-    fillTriangle(projected[0][0], projected[0][1], projected[1][0], projected[1][1], projected[2][0], projected[2][1], newColor);
+    fillTriangle(projected[0][0], projected[0][1], projected[1][0], projected[1][1], projected[2][0], projected[2][1], newColor);  
 }
 //--------------------------------------------------------------------------------
 //Shapes ------------------------------------------------------------------------
 class AbstractShape{
     constructor(points, faceRefs, color = '#FF0000FF', rotX = 0, rotY = 0, rotZ = 0){ 
         this.points = points;
-        this.faceRefs = faceRefs;//this array contains the indexes of the points in points array that make up the faces
+        //this array contains the indexes of the points in points array that make up the faces
+        //shouldn't matter the order of the points in the face anymore because 
+        //I check if the normal is facing the center of shape and flip it if it is
+        this.faceRefs = faceRefs;
         this.faces = this.constructFaces(); 
         this.color = color;
         this.rotX = rotX;
@@ -592,6 +596,17 @@ class AbstractShape{
 
     backfaceCulling(face){
         let normal = getNormal(face[0], face[1], face[2]);
+
+        //check if normal is facing the center of the shape, if so flip it
+        //this is so that the normal is always facing out of the shape
+        let center = this.getCenter();
+        let centerToFace = [face[0][0] - center[0], face[0][1] - center[1], face[0][2] - center[2]];
+        if(dotProduct(normal, centerToFace) > 0){
+            normal = [-normal[0], -normal[1], -normal[2]];
+        }
+        
+        //check if normal is facing the camera
+        //if its not, then don't draw the face
         let camToFace = [face[0][0] - eye[0], face[0][1] - eye[1], face[0][2] - eye[2]];
         if(dotProduct(normal, camToFace) < 0){
             return true;
@@ -611,7 +626,7 @@ class AbstractShape{
             let cull = this.backfaceCulling(this.faces[i]);
             if(cull)
                 continue;
-            fillFace(this.faces[i], this.getCenter(), this.color);
+            fillFace(this.faces[i], this.color);
         }
     }
 }
@@ -655,6 +670,33 @@ class RectPrism extends AbstractShape{
 class Cube extends RectPrism{
     constructor(x, y, z, s, color = '#FF0000FF'){
         super(x, y, z, s, s, s, color);
+    }
+}
+
+class Pyrimid extends AbstractShape{
+    //x, y, z is the center of the base
+    constructor(x, y, z, w, h, color = '#FF0000FF'){
+        let points = [
+            [x-w/2, y, z-w/2],
+            [x+w/2, y, z-w/2],
+            [x+w/2, y, z+w/2],
+            [x-w/2, y, z+w/2],
+            [x, y-h, z]
+        ];
+        let faceRefs = [
+            [0, 1, 4],
+            [1, 2, 4],
+            [2, 3, 4],
+            [3, 0, 4],
+            [0, 1, 2],
+            [0, 2, 3]
+        ];
+        super(points, faceRefs, color);
+        this.x = x;
+        this.y = y;
+        this.z = z;
+        this.w = w;
+        this.h = h;
     }
 }
 //--------------------------------------------------------------------------------
