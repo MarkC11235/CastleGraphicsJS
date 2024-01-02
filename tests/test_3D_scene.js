@@ -25,16 +25,16 @@ function draw(){
     if(rot > 2 * Math.PI)
         rot = 0;
 
-    floor.rotX = rot;
+    floor.rotY = rot;
     floor.draw();
 
-    trunk.rotX = rot;
+    trunk.rotY = rot;
     trunk.draw();
 
-    above.rotX = rot;
+    above.rotY = rot;
     above.draw();
 
-    main_leaves.rotX = rot;
+    main_leaves.rotY = rot;
     main_leaves.draw();
 
     //zEye += 0.1;

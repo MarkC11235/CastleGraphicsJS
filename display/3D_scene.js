@@ -25,16 +25,16 @@ function draw(){
     if(treeRot> 2 * Math.PI)
         treeRot= 0;
 
-    floor.rotX = treeRot;
+    floor.rotY = treeRot;
     floor.draw();
 
-    trunk.rotX = treeRot;
+    trunk.rotY = treeRot;
     trunk.draw();
 
-    above.rotX = treeRot;
+    above.rotY = treeRot;
     above.draw();
 
-    main_leaves.rotX = treeRot;
+    main_leaves.rotY = treeRot;
     main_leaves.draw();
 
     //zEye += 0.1;

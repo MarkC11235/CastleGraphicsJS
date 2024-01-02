@@ -21,6 +21,11 @@ const rp = new RectPrism(50, 50, 50, 80, 50, 50, '#FF0000FF');
 
 const pyrimid = new Pyrimid(50, 75, 50, 50, 50, '#FF0000FF');
 
+const sphere = new Sphere(50, 50, 50, 50, '#FF0000FF');
+
+let angle = 0;
+angle = angle * Math.PI / 180;
+
 function draw(){
     fillCanvas("#808080");
     // shape.rotate(.01, .01, .01);
@@ -30,12 +35,16 @@ function draw(){
     // cube.draw();
     // rp.rotate(.01, .01, .01);
     // rp.draw();
-    pyrimid.rotate(.01, 0, 0);
-    pyrimid.draw();
+    // pyrimid.rotate(0, .01, 0);
+    // pyrimid.draw();
+    sphere.rotate(angle, 0, 0);
+    sphere.draw();
 }
 
 const c = document.getElementById("canvas");
 const cg_c = addCGCanvas(c, draw, 100, 100);
 
-render();
-//CGDraw(cg_c);
+const renderLoop = false;
+
+if(renderLoop)render();
+if(!renderLoop)CGDraw(cg_c);

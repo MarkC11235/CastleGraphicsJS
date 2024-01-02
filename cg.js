@@ -414,9 +414,9 @@ function rotateAroundAPointY(point, center, angle) {
     const [x, y, z] = [point[0] - cx, point[1] - cy, point[2] - cz];
     const [cos, sin] = [Math.cos(angle), Math.sin(angle)];
     
-    const [rx, ry, rz] = [x,
-                          y * cos - z * sin,
-                          y * sin + z * cos];
+    const [rx, ry, rz] = [x * cos + z * sin,
+                          y,
+                          -x * sin + z * cos];
                           
     return [rx + cx, ry + cy, rz + cz];
 }
@@ -426,9 +426,9 @@ function rotateAroundAPointX(point, center, angle) {
     const [x, y, z] = [point[0] - cx, point[1] - cy, point[2] - cz];
     const [cos, sin] = [Math.cos(angle), Math.sin(angle)];
     
-    const [rx, ry, rz] = [x * cos + z * sin,
-                          y,
-                          -x * sin + z * cos];
+    const [rx, ry, rz] = [x,
+                          y * cos - z * sin,
+                          y * sin + z * cos];
                           
     return [rx + cx, ry + cy, rz + cz];
 }
@@ -697,6 +697,39 @@ class Pyrimid extends AbstractShape{
         this.z = z;
         this.w = w;
         this.h = h;
+    }
+}
+
+class Sphere extends AbstractShape{
+    constructor(x, y, z, r, color = '#FF0000FF'){
+        let points = [];
+        let faceRefs = [];
+        let num_points = 20;
+        for(let i = 0; i < num_points; i++){
+            for(let j = 0; j < num_points; j++){
+                let theta = 2 * Math.PI * i / num_points;
+                let phi = Math.PI * j / num_points;
+                let px = x + r * Math.sin(phi) * Math.cos(theta);
+                let py = y + r * Math.sin(phi) * Math.sin(theta);
+                let pz = z + r * Math.cos(phi);
+                points.push([px, py, pz]);
+            }
+        }
+        for(let i = 0; i < num_points - 1; i++){
+            for(let j = 0; j < num_points - 1; j++){
+                let p1 = i * num_points + j;
+                let p2 = i * num_points + j + 1;
+                let p3 = (i + 1) * num_points + j + 1;
+                let p4 = (i + 1) * num_points + j;
+                faceRefs.push([p1, p2, p3]);
+                faceRefs.push([p1, p3, p4]);
+            }
+        }
+        super(points, faceRefs, color);
+        this.x = x;
+        this.y = y;
+        this.z = z;
+        this.r = r;
     }
 }
 //--------------------------------------------------------------------------------
