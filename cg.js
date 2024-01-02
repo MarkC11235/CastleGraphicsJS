@@ -146,6 +146,8 @@ function CGDraw(cg_canvas) {
     currentCanvas = cg_canvas.canvas;
     currentWidth = cg_canvas.width;
     currentHeight = cg_canvas.height;
+    //the eye is set to half the width and height of the canvas and z is set to -width/2
+    changeEye(cg_canvas.eye[0], cg_canvas.eye[1], cg_canvas.eye[2]); 
     cg_canvas.drawfunc();
 }
 //--------------------------------------------------------------------------------
@@ -369,6 +371,13 @@ function drawSpriteFlipX(x, y, w, h, image) {
 //3D -----------------------------------------------------------------------------
 
 //3D helper functions ------------------------------------------------------------
+//default to light coming from the screen
+const LIGHT_SOURCE = [0, 0, 1];
+function changeLightSource(x, y, z) {
+    LIGHT_SOURCE[0] = x;
+    LIGHT_SOURCE[1] = y;
+    LIGHT_SOURCE[2] = z;
+}
 //the position of the eye(eye[0] and eye[1] get set to half the width and height of the canvas in initCG())
 //eye[2] is the z coordinate of the eye, and gets set to -width/2 in initCG()
 const eye = [50, 50, -50]; 
@@ -424,6 +433,14 @@ function rotateAroundAPointX(point, center, angle) {
     return [rx + cx, ry + cy, rz + cz];
 }
 
+function rotatePointAroundAPoint(point, center, rotX, rotY, rotZ){
+    let  [rx, ry, rz] = rotateAroundAPointX(point, center, rotX);
+    [rx, ry, rz] = rotateAroundAPointY([rx, ry, rz], center, rotY);
+    [rx, ry, rz] = rotateAroundAPointZ([rx, ry, rz], center, rotZ);
+
+    return [rx, ry, rz];
+}
+
 function getNormal(p1, p2, p3) {
     let [x1, y1, z1] = p1;
     let [x2, y2, z2] = p2;
@@ -452,53 +469,94 @@ function getShading(normal) {
     return dot;
 }
 
+//applies shading to a color
+function shadeColor(color, shading){
+    let r = parseInt(color.substring(1, 3), 16);
+    let g = parseInt(color.substring(3, 5), 16);
+    let b = parseInt(color.substring(5, 7), 16);
+      
+    r = Math.round(r * shading);
+    r = r.toString(16);
+    r = r.padStart(2, '0');
+
+    g = Math.round(g * shading);
+    g = g.toString(16);
+    g = g.padStart(2, '0');
+
+    b = Math.round(b * shading);
+    b = b.toString(16);
+    b = b.padStart(2, '0');
+        
+    let newColor = '#' + r + g + b;
+
+    //console.log(color, color.length, color.substring(7, 9));
+    if(color.length == 9 && color.substring(7, 9) != 'ff' && color.substring(7, 9) != 'FF'){
+        //console.log("Color has alpha", color);
+        let a = parseInt(color.substring(7, 9), 16);
+        a = Math.round(a * shading);
+        a = a.toString(16);
+        a = a.padStart(2, '0');
+        newColor += a;
+    }
+    return newColor;
+}
+
+//A face is 3 points
+//if it returns false, then don't draw the face
+function faceShading(face, color){
+    const p1 = face[0];
+    const p2 = face[1];
+    const p3 = face[2];
+
+    let normal = getNormal(p1, p2, p3); 
+
+    let shading = getShading(normal);
+    return shadeColor(color, shading);
+}
+
 function dotProduct(v1, v2) {
     let [x1, y1, z1] = v1;
     let [x2, y2, z2] = v2;
     return x1 * x2 + y1 * y2 + z1 * z2;
 }
     
-function averageZ(face, points) {
+function avZ(face) {
     let sum = 0;
     for(let i = 0; i < face.length; i++){
-        sum += points[face[i]][2];
+        sum += face[i][2];
     }
     return sum / face.length;
 }
+//takes in an array of three points
+//draws a triangle with the given color
+//the center is the center of the whole shape
+function fillFace(points, center, color = '#FF0000FF'){
+    //getting the 2D representation of the points
+    let projected = [];
+    for(let i = 0; i < points.length; i++){
+        const p = points[i];
+        const x = p[0];
+        const y = p[1];
+        const z = p[2];
 
-function changeLightSource(x, y, z) {
-    LIGHT_SOURCE[0] = x;
-    LIGHT_SOURCE[1] = y;
-    LIGHT_SOURCE[2] = z;
+        [sx, sy] = project(x, y, z);
+        projected.push([sx, sy]);
+    }
+
+    let newColor = faceShading(points, color);
+    fillTriangle(projected[0][0], projected[0][1], projected[1][0], projected[1][1], projected[2][0], projected[2][1], newColor);
 }
 //--------------------------------------------------------------------------------
-//if the cube is paritially/fully behind the screenZ, then it won't be rendered correctly
-//the EDGES and FACES get out of order because of the negative Z values
-const EDGES = [[0, 1], [1, 2], [2, 3], [3, 0], [4,5], [5,6], [6,7], [7,4], [0,4], [1,5], [2,6], [3,7]];
-const FACES = [[0,1,2,3], [4,5,6,7], [0,4,5,1], [2,3,7,6], [1,2,6,5], [0,3,7,4]];
-const LIGHT_SOURCE = [0, 0, 1];//default to light coming from the screen
-const TEST_MODE = false;
-class Cube{
-    constructor(x, y, z, s, color = '#FF0000', rotX = 0, rotY = 0, rotZ = 0){//x, y, z is the center of the cube
-        this.x = x;
-        this.y = y;
-        this.z = z;
-        this.s = s;
+//Shapes ------------------------------------------------------------------------
+class AbstractShape{
+    constructor(points, faceRefs, color = '#FF0000FF', rotX = 0, rotY = 0, rotZ = 0){ 
+        this.points = points;
+        this.faceRefs = faceRefs;//this array contains the indexes of the points in points array that make up the faces
+        this.faces = this.constructFaces(); 
         this.color = color;
         this.rotX = rotX;
         this.rotY = rotY;
         this.rotZ = rotZ;
-
-        this.points = [
-            [this.x - this.s/2, this.y - this.s/2, this.z - this.s/2],
-            [this.x + this.s/2, this.y - this.s/2, this.z - this.s/2],
-            [this.x + this.s/2, this.y + this.s/2, this.z - this.s/2],
-            [this.x - this.s/2, this.y + this.s/2, this.z - this.s/2],
-            [this.x - this.s/2, this.y - this.s/2, this.z + this.s/2],
-            [this.x + this.s/2, this.y - this.s/2, this.z + this.s/2],
-            [this.x + this.s/2, this.y + this.s/2, this.z + this.s/2],
-            [this.x - this.s/2, this.y + this.s/2, this.z + this.s/2]
-        ]
     }
 
     rotate(rotX, rotY, rotZ){
@@ -507,198 +565,97 @@ class Cube{
         this.rotZ += rotZ;
     }
 
+    getCenter(){
+        let sum = [0, 0, 0];
+        for(let i = 0; i < this.points.length; i++){
+            sum[0] += this.points[i][0];
+            sum[1] += this.points[i][1];
+            sum[2] += this.points[i][2];
+        }
+        return [sum[0] / this.points.length, sum[1] / this.points.length, sum[2] / this.points.length];
+    }
+
+    constructFaces(){
+        let fs = [];
+        for(let i = 0; i < this.faceRefs.length; i++){
+            let face = [];
+            for(let j = 0; j < this.faceRefs[i].length; j++){
+                face.push(rotatePointAroundAPoint(this.points[this.faceRefs[i][j]], this.getCenter(), this.rotX, this.rotY, this.rotZ));
+            }
+            fs.push(face);
+        }
+        //console.log(fs);
+        fs.sort((a, b) => avZ(b) - avZ(a));
+        //console.log(fs);
+        return fs; 
+    }
+
+    backfaceCulling(face){
+        let normal = getNormal(face[0], face[1], face[2]);
+        let camToFace = [face[0][0] - eye[0], face[0][1] - eye[1], face[0][2] - eye[2]];
+        if(dotProduct(normal, camToFace) < 0){
+            return true;
+        }
+        return false;
+    }
+
     draw(){
-        drawCubeRotated(this.points, this.rotX, this.rotY, this.rotZ, this.color);
-        //drawCube(this.points, this.color);
+        let pointsToDraw = [];
+        for(let i = 0; i < this.points.length; i++){
+            pointsToDraw.push(rotatePointAroundAPoint(this.points[i], this.getCenter(), this.rotX, this.rotY, this.rotZ));
+        }
+        this.faces = this.constructFaces();
+        let loops = this.faces.length;
+        for(let i = 0; i < loops; i++){
+            //console.log("Drawing face " + i);
+            let cull = this.backfaceCulling(this.faces[i]);
+            if(cull)
+                continue;
+            fillFace(this.faces[i], this.getCenter(), this.color);
+        }
     }
 }
 
-class Block{
-    constructor(x, y, z, w, h, d, color = '#FF0000', rotX = 0, rotY = 0, rotZ = 0){//x, y, z is the center of the block
+class RectPrism extends AbstractShape{
+    constructor(x, y, z, w, h, d, color = '#FF0000FF'){
+        let points = [
+            [x - w/2, y - h/2, z - d/2],
+            [x + w/2, y - h/2, z - d/2],
+            [x + w/2, y + h/2, z - d/2],
+            [x - w/2, y + h/2, z - d/2],
+            [x - w/2, y - h/2, z + d/2],
+            [x + w/2, y - h/2, z + d/2],
+            [x + w/2, y + h/2, z + d/2],
+            [x - w/2, y + h/2, z + d/2]
+        ];
+        let faceRefs = [
+            [0, 1, 2],
+            [0, 2, 3],
+            [0, 3, 7],
+            [0, 7, 4],
+            [0, 4, 5],
+            [0, 5, 1],
+            [6, 2, 1],
+            [6, 3, 2],
+            [6, 7, 3],
+            [6, 4, 7],
+            [6, 5, 4],
+            [6, 1, 5]
+        ];
+        super(points, faceRefs, color);
         this.x = x;
         this.y = y;
         this.z = z;
         this.w = w;
         this.h = h;
         this.d = d;
-        this.color = color;
-        this.rotX = rotX;
-        this.rotY = rotY;
-        this.rotZ = rotZ;
-
-        this.points = [
-            [this.x - this.w/2, this.y - this.h/2, this.z - this.d/2],
-            [this.x + this.w/2, this.y - this.h/2, this.z - this.d/2],
-            [this.x + this.w/2, this.y + this.h/2, this.z - this.d/2],
-            [this.x - this.w/2, this.y + this.h/2, this.z - this.d/2],
-            [this.x - this.w/2, this.y - this.h/2, this.z + this.d/2],
-            [this.x + this.w/2, this.y - this.h/2, this.z + this.d/2],
-            [this.x + this.w/2, this.y + this.h/2, this.z + this.d/2],
-            [this.x - this.w/2, this.y + this.h/2, this.z + this.d/2]
-        ]
-    }
-
-    draw(){
-        drawCubeRotated(this.points, this.rotX, this.rotY, this.rotZ, this.color);
-        //drawCube(this.points, this.color);
     }
 }
 
-function drawEdges(projected){
-    //Draw lines
-    for(let i = 0; i < EDGES.length; i++){
-        const e = EDGES[i];
-        const p1 = projected[e[0]];
-        const p2 = projected[e[1]];
-        drawLine(p1[0], p1[1], p2[0], p2[1], 'black');
+class Cube extends RectPrism{
+    constructor(x, y, z, s, color = '#FF0000FF'){
+        super(x, y, z, s, s, s, color);
     }
 }
-
-function drawFaces(points, projected, color = '#FF0000FF'){
-    let center = [
-        (points[0][0] + points[6][0]) / 2,
-        (points[0][1] + points[6][1]) / 2,
-        (points[0][2] + points[6][2]) / 2
-    ];
-
-    //sort the faces by average z value
-    //this is so that the faces that are closer to the camera will be drawn on top of the faces that are farther away
-    //just in case the face is technically facing you but is behind another face
-    let faces = FACES.map(face => ({face, avgZ: averageZ(face, points)}));
-
-    faces.sort((a, b) => b.avgZ - a.avgZ);
-    //console.log(faces);
-
-    //Draw faces
-    for(let i = 0; i < faces.length; i++){
-        //console.log("Drawing face " + i);
-        //console.log(FACES[i]);
-        const f = faces[i].face;
-        const p1 = projected[f[0]];
-        const p2 = projected[f[1]];
-        const p3 = projected[f[2]];
-        const p4 = projected[f[3]];
-
-
-        //console.log(color);
-        let normal = getNormal(points[f[0]], points[f[1]], points[f[2]]);
-        //console.log(normal);
-
-        let faceToCenter = [center[0] - points[f[0]][0], center[1] - points[f[0]][1], center[2] - points[f[0]][2]];
-        //console.log(faceToCenter);
-        //console.log(dotProduct(normal, faceToCenter));
-        if(dotProduct(normal, faceToCenter) > 0) //if the normal is pointing towards from the center, then flip it
-            normal = [-normal[0], -normal[1], -normal[2]];
-
-        //console.log(normal);
-
-        //backface culling
-        let camToFace = [points[f[0]][0] - eye[0], points[f[0]][1] - eye[1], points[f[0]][2] - eye[2]];
-        if(dotProduct(normal, camToFace) > 0){
-            //console.log("Backface culling: " + i);
-            continue;
-        }
-
-        let shading = getShading(normal);
-        //console.log(normal, shading);
-        let r = parseInt(color.substring(1, 3), 16);
-        let g = parseInt(color.substring(3, 5), 16);
-        let b = parseInt(color.substring(5, 7), 16);
-      
-        r = Math.round(r * shading);
-        r = r.toString(16);
-        r = r.padStart(2, '0');
-
-        g = Math.round(g * shading);
-        g = g.toString(16);
-        g = g.padStart(2, '0');
-
-        b = Math.round(b * shading);
-        b = b.toString(16);
-        b = b.padStart(2, '0');
-        
-        let newColor = '#' + r + g + b;
-
-        //console.log(color, color.length, color.substring(7, 9));
-        if(color.length == 9 && color.substring(7, 9) != 'ff' && color.substring(7, 9) != 'FF'){
-            //console.log("Color has alpha", color);
-            let a = parseInt(color.substring(7, 9), 16);
-            a = Math.round(a * shading);
-            a = a.toString(16);
-            a = a.padStart(2, '0');
-            newColor += a;
-        }
-
-        //console.log(newColor);
-        
-        fillTriangle(p1[0], p1[1], p2[0], p2[1], p3[0], p3[1], newColor);
-        fillTriangle(p1[0], p1[1], p3[0], p3[1], p4[0], p4[1], newColor);
-        //this to fix the lines between the faces
-        //Only kind of works(would need a thicker line to work well)
-        //drawLine(p1[0], p1[1], p3[0], p3[1], newColor); 
-        //Right now only draw if the cube is opaque
-        if(color.length == 9 && color.substring(7, 9) == 'ff'){
-            //console.log("Drawing diagonal line");
-            drawLine(p1[0], p1[1], p3[0], p3[1], newColor);
-        }
-    }
-}
-
-//if edges is null, then it will just draw the points
-function drawCube(points, color = '#FF0000FF'){
-    let projected = [];
-    for(let i = 0; i < points.length; i++){
-        const p = points[i];
-        const x = p[0];
-        const y = p[1];
-        const z = p[2];
-
-        // if(z < screenZ){
-        //     console.log("Point is behind screenZ");
-        //     return;
-        // }
-
-        [sx, sy] = project(x, y, z);
-        projected.push([sx, sy]);
-        
-    }
-    if(TEST_MODE){
-        for(let i = 0; i < projected.length; i++){
-            fillCircle(projected[i][0], projected[i][1], .5, 'red');
-            drawText(projected[i][0], projected[i][1], i, 'black', 2.5);
-        }
-    }
-
-    //console.log(projected); 
-
-    if(TEST_MODE)
-        drawEdges(projected);
-    else
-        drawFaces(points, projected, color);
-}
-
-function drawCubeRotated(points, rotX, rotY, rotZ, color = '#FF0000FF'){
-    let rotatedPoints = [];
-
-    let center = [
-        (points[0][0] + points[6][0]) / 2,
-        (points[0][1] + points[6][1]) / 2,
-        (points[0][2] + points[6][2]) / 2
-    ];
-
-    for(let i = 0; i < points.length; i++){
-        const p = points[i];
-        const x = p[0];
-        const y = p[1];
-        const z = p[2];
-
-        let  [rx, ry, rz] = rotateAroundAPointX(p, center, rotX);
-        [rx, ry, rz] = rotateAroundAPointY([rx, ry, rz], center, rotY);
-        [rx, ry, rz] = rotateAroundAPointZ([rx, ry, rz], center, rotZ);
-
-        rotatedPoints.push([rx, ry, rz]);
-    }
-
-    drawCube(rotatedPoints, color);
-}
+//--------------------------------------------------------------------------------
 //--------------------------------------------------------------------------------
