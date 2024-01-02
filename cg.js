@@ -701,35 +701,104 @@ class Pyrimid extends AbstractShape{
 }
 
 class Sphere extends AbstractShape{
-    constructor(x, y, z, r, color = '#FF0000FF'){
+    constructor(x, y, z, r, color = '#FF0000FF', smoothness = 20){
         let points = [];
         let faceRefs = [];
-        let num_points = 20;
-        for(let i = 0; i < num_points; i++){
-            for(let j = 0; j < num_points; j++){
-                let theta = 2 * Math.PI * i / num_points;
-                let phi = Math.PI * j / num_points;
+        
+        for(let i = 0; i <= smoothness; i++){
+            let phi = Math.PI * i / smoothness;
+            for(let j = 0; j <= smoothness; j++){
+                let theta = 2 * Math.PI * j / smoothness;
                 let px = x + r * Math.sin(phi) * Math.cos(theta);
                 let py = y + r * Math.sin(phi) * Math.sin(theta);
                 let pz = z + r * Math.cos(phi);
                 points.push([px, py, pz]);
             }
         }
-        for(let i = 0; i < num_points - 1; i++){
-            for(let j = 0; j < num_points - 1; j++){
-                let p1 = i * num_points + j;
-                let p2 = i * num_points + j + 1;
-                let p3 = (i + 1) * num_points + j + 1;
-                let p4 = (i + 1) * num_points + j;
+
+        for(let i = 0; i < smoothness; i++){
+            for(let j = 0; j < smoothness; j++){
+                let p1 = i * (smoothness + 1) + j;
+                let p2 = p1 + 1;
+                let p3 = p1 + smoothness + 1;
+                let p4 = p3 + 1;
                 faceRefs.push([p1, p2, p3]);
-                faceRefs.push([p1, p3, p4]);
+                faceRefs.push([p2, p4, p3]);
             }
         }
+
         super(points, faceRefs, color);
         this.x = x;
         this.y = y;
         this.z = z;
         this.r = r;
+    }
+}
+
+class Cylinder extends AbstractShape{
+    constructor(x, y, z, r, h, color = '#FF0000FF', smoothness = 20){
+        let points = [];
+        let faceRefs = [];
+
+        //vertices order
+        //[top circle center, top circle, bottom circle center, bottom circle]
+
+        //top circle center
+        points.push([x, y + h/2, z]);
+
+        //top circle
+        for(let i = 0; i <= smoothness; i++){
+            let theta = 2 * Math.PI * i / smoothness;
+            let px = x + r * Math.cos(theta);
+            let py = y + h/2;
+            let pz = z + r * Math.sin(theta);
+            points.push([px, py, pz]);
+        }
+
+        //bottom circle center
+        points.push([x, y - h/2, z]);
+
+        //bottom circle
+        for(let i = 0; i <= smoothness; i++){
+            let theta = 2 * Math.PI * i / smoothness;
+            let px = x + r * Math.cos(theta);
+            let py = y - h/2;
+            let pz = z + r * Math.sin(theta);
+            points.push([px, py, pz]);
+        }
+        
+        //top circle faces
+        for(let i = 0; i < smoothness; i++){
+            let p1 = 0;
+            let p2 = 1 + i;
+            let p3 = p2 + 1;
+            faceRefs.push([p1, p2, p3]);
+        }
+
+        //bottom circle faces
+        for(let i = 0; i < smoothness; i++){
+            let p1 = smoothness + 2;
+            let p2 = p1 + 1 + i;
+            let p3 = p2 + 1;
+            faceRefs.push([p1, p2, p3]);
+        }
+
+        //sides
+        for(let i = 0; i < smoothness; i++){
+            let p1 = 1 + i;
+            let p2 = p1 + 1;
+            let p3 = p2 + smoothness + 2;
+            let p4 = p3 - 1;
+            faceRefs.push([p1, p2, p3]);
+            faceRefs.push([p1, p3, p4]);
+        }
+
+        super(points, faceRefs, color);
+        this.x = x;
+        this.y = y;
+        this.z = z;
+        this.r = r;
+        this.h = h;
     }
 }
 //--------------------------------------------------------------------------------

@@ -1,15 +1,15 @@
-let cube = new Cube(50, 50, 60, 60, '#FF000080');
-let cube2 = new Cube(50, 50, 60, 30, '#00FF00FF');
+let cubeOuter = new Cube(50, 50, 60, 60, '#FF000080');
+let cubeInner = new Cube(50, 50, 60, 30, '#00FF00FF');
 
 function draw(){
     fillCanvas('#AAAAAA');
 
-    cube2.rotate(0.01, 0.01, 0.01);
-    cube2.draw();
+    cubeInner.rotate(0.01, 0.01, 0.01);
+    cubeInner.draw();
 
-    cube.rotate(0.01, 0.01, 0.01);
-    cube.draw();
+    cubeOuter.rotate(0.01, 0.01, 0.01);
+    cubeOuter.draw();
 }
 
-const c = document.getElementById('canvas_transparent_cubes');
-const cg_c = addCGCanvas(c, draw, 100, 100);
+const canvas_transparent_cubes = document.getElementById('canvas_transparent_cubes');
+const cg_canvas_transparent_cubes = addCGCanvas(canvas_transparent_cubes, draw, 100, 100);
