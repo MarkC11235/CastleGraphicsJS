@@ -386,10 +386,17 @@ function changeEye(x, y, z) {
     eye[1] = y;
     eye[2] = z;
 }
-const screenZ = 0;
+let screenZ = 0;
+
+function movePerspective(x, y, z) {
+    eye[0] += x;
+    eye[1] += y;
+    eye[2] += z;
+    screenZ += z;
+}
 function project(x, y, z) {
-    // if(z === screenZ)
-    //     return [x, y];
+    if(z < screenZ)
+        return [null, null];
     
     let sx = (x - eye[0]) * (screenZ - z) / (z - eye[2]) + x;
     let sy = (y - eye[1]) * (screenZ - z) / (z - eye[2]) + y;
@@ -541,6 +548,8 @@ function fillFace(points, color = '#FF0000FF'){
         const z = p[2];
 
         [sx, sy] = project(x, y, z);
+        if(sx == null || sy == null)
+            return;
         projected.push([sx, sy]);
     }
 
