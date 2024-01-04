@@ -563,6 +563,22 @@ class AbstractShape{
         this.rotZ = rotZ;
     }
 
+    moveTo(x, y, z){
+        let center = this.getCenter();
+        let dx = x - center[0];
+        let dy = y - center[1];
+        let dz = z - center[2];
+        this.move(dx, dy, dz);
+    }
+
+    move(x = 0, y = 0, z = 0){
+        for(let i = 0; i < this.points.length; i++){
+            this.points[i][0] += x;
+            this.points[i][1] += y;
+            this.points[i][2] += z;
+        }
+    }
+
     rotate(rotX, rotY, rotZ){
         this.rotX += rotX;
         this.rotY += rotY;
